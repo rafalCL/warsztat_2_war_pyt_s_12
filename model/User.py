@@ -1,4 +1,5 @@
 from clcrypto import password_hash, generate_salt, check_password
+from db.connect_workshop_2 import connect_workshop_2
 
 
 class User:
@@ -35,3 +36,26 @@ class User:
 
     def is_password_correct(self, candidate):
         return check_password(candidate, self.__hashed_password)
+
+    def save_to_db(self, cursor):
+        if self.__id == User.__ID_UNSAVED:
+            sql = "INSERT INTO users VALUES(default, %s, %s, %s) RETURNING id;"
+            cursor.execute(sql, (self.__email, self.__username, self.__hashed_password))
+            self.__id = cursor.fetchone()[0]
+            return True
+        else:
+            # todo update
+            raise Exception("Not implemented")
+
+
+conn = connect_workshop_2()
+cur = conn.cursor()
+
+u = User()
+u.username = "ala"
+u.email = "ala@mairl.pl"
+u.set_password("qwe")
+u.save_to_db(cur)
+
+cur.close()
+conn.close()
